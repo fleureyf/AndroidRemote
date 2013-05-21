@@ -16,52 +16,59 @@ import java.net.UnknownHostException;
  * @author Fabien Fleurey
  * @version 1.0 5/20/13
  */
-public class ConnectionManager {
+public class SimpleNetworkManager implements NetworkManager {
 
-    private static final String TAG = ConnectionManager.class.getSimpleName();
+    private static final String TAG = SimpleNetworkManager.class.getSimpleName();
 
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
 
-    public void connect() {
+    @Override
+    public boolean connect(InetAddress address, int port) {
         try {
-            InetAddress serverAddress = InetAddress.getByAddress(new byte[]{(byte) 192, (byte) 168, (byte) 0, (byte) 20});
-            socket = new Socket(serverAddress, 5566);
+            socket = new Socket(address, port);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
+            return true;
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Connection error", e);
+            return false;
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Connection error", e);
+            return false;
         }
     }
 
-    public void sendEvent(EventEnum event) {
+    @Override
+    public boolean sendEvent(EventEnum event) {
         if (out != null) {
             out.println(ClientMessageContract.EVENT);
             out.print(event);
+            return true;
         } else {
             Log.e(TAG, "Can't send event: out stream is null");
+            return false;
         }
     }
 
-    public void disconnect() {
-        if (out != null) {
-            out.println(ClientMessageContract.C_DISCONNECT);
-        }
+    @Override
+    public boolean disconnect() {
         try {
             if (in != null) {
                 in.close();
             }
             if (out != null) {
+                out.println(ClientMessageContract.C_DISCONNECT);
                 out.close();
             }
             if (socket != null) {
                 socket.close();
             }
+            return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Disconnect error", e);
+            return false;
         }
     }
 }
