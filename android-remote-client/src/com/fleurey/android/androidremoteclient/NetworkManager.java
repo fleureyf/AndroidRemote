@@ -11,7 +11,7 @@ import java.net.InetAddress;
 public interface NetworkManager {
 
     public boolean connect(InetAddress address, int port);
-    public boolean sendEvent(EventEnum event);
+    public boolean sendEvent(int keyCode);
     public boolean disconnect();
 
 }

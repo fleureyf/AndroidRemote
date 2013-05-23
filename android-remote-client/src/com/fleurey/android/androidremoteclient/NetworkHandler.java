@@ -43,7 +43,7 @@ public class NetworkHandler extends Handler {
                 getLooper().quit();
                 break;
             case MSG_EVENT:
-                networkManager.sendEvent((EventEnum) msg.obj);
+                networkManager.sendEvent(msg.arg1);
                 break;
         }
     }

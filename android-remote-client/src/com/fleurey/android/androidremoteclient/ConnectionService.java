@@ -16,6 +16,7 @@ public class ConnectionService extends Service {
 
     private NetworkManager networkManager = new SimpleNetworkManager();
     private NetworkHandler networkHandler;
+    private Messenger networkMessager;
 
     @Override
     public void onCreate() {
@@ -24,6 +25,7 @@ public class ConnectionService extends Service {
         HandlerThread handlerThread = new HandlerThread("NetworkThread", Process.THREAD_PRIORITY_BACKGROUND);
         handlerThread.start();
         networkHandler = new NetworkHandler(handlerThread.getLooper(), networkManager);
+        networkMessager = new Messenger(networkHandler);
     }
 
     @Override
@@ -33,6 +35,6 @@ public class ConnectionService extends Service {
     }
 
     public IBinder onBind(Intent intent) {
-        return null;
+        return networkMessager.getBinder();
     }
 }

@@ -41,10 +41,10 @@ public class SimpleNetworkManager implements NetworkManager {
     }
 
     @Override
-    public boolean sendEvent(EventEnum event) {
+    public boolean sendEvent(int keyCode) {
         if (out != null) {
             out.println(ClientMessageContract.EVENT);
-            out.print(event);
+            out.print(keyCode);
             return true;
         } else {
             Log.e(TAG, "Can't send event: out stream is null");

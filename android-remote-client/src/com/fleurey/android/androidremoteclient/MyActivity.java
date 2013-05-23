@@ -2,15 +2,20 @@ package com.fleurey.android.androidremoteclient;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import com.fleurey.android.androidremotecontract.EventEnum;
 
-public class MyActivity extends Activity {
+public class MyActivity extends NetworkActivity {
 
-    private NetworkThread networkThread = new NetworkThread();
+    private static final String TAG = MyActivity.class.getSimpleName();
 
     private Button btnConnect;
     private Button btnSendEvent;
@@ -24,13 +29,13 @@ public class MyActivity extends Activity {
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                networkThread.getHandler().obtainMessage(NetworkThread.MSG_CONNECT).sendToTarget();
+                connect();
             }
         });
         btnSendEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                networkThread.getHandler().obtainMessage(NetworkThread.MSG_EVENT, EventEnum.UP).sendToTarget();
+                sendEvent(KeyEvent.KEYCODE_A);
             }
         });
     }
@@ -42,17 +47,10 @@ public class MyActivity extends Activity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        networkThread.getHandler().obtainMessage(NetworkThread.MSG_DISCONNECT).sendToTarget();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_quit) {
-
-            return true;
+            disconnect();
         }
-        return false;
+        return true;
     }
 }
