@@ -1,8 +1,7 @@
-package com.fleurey.android.androidremoteclient;
+package com.fleurey.android.androidremoteclient.network;
 
 import android.util.Log;
 import com.fleurey.android.androidremotecontract.ClientMessageContract;
-import com.fleurey.android.androidremotecontract.EventEnum;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,7 +43,7 @@ public class SimpleNetworkManager implements NetworkManager {
     public boolean sendEvent(int keyCode) {
         if (out != null) {
             out.println(ClientMessageContract.EVENT);
-            out.print(keyCode);
+            out.println(keyCode);
             return true;
         } else {
             Log.e(TAG, "Can't send event: out stream is null");

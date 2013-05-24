@@ -1,15 +1,14 @@
-package com.fleurey.android.androidremoteclient;
+package com.fleurey.android.androidremoteclient.service;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-import com.fleurey.android.androidremotecontract.EventEnum;
+import com.fleurey.android.androidremoteclient.network.NetworkManager;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NetworkHandler extends Handler {
@@ -54,11 +53,7 @@ public class NetworkHandler extends Handler {
             return null;
         }
         String[] ip = Pattern.compile("\\.").split(address);
-        byte[] ipInByte = ByteBuffer.allocate(4)
-                .putInt(Integer.parseInt(ip[0]))
-                .putInt(Integer.parseInt(ip[1]))
-                .putInt(Integer.parseInt(ip[2]))
-                .putInt(Integer.parseInt(ip[3])).array();
+        byte[] ipInByte = new byte[]{(byte) Integer.parseInt(ip[0]), (byte) Integer.parseInt(ip[1]), (byte) Integer.parseInt(ip[2]), (byte) Integer.parseInt(ip[3])};
         try {
             return InetAddress.getByAddress(ipInByte);
         } catch (UnknownHostException e) {

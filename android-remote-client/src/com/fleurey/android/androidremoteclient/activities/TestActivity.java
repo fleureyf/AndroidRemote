@@ -1,21 +1,17 @@
-package com.fleurey.android.androidremoteclient;
+package com.fleurey.android.androidremoteclient.activities;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import com.fleurey.android.androidremotecontract.EventEnum;
+import com.fleurey.android.androidremoteclient.R;
 
-public class MyActivity extends NetworkActivity {
+public class TestActivity extends NetworkActivity {
 
-    private static final String TAG = MyActivity.class.getSimpleName();
+    private static final String TAG = TestActivity.class.getSimpleName();
 
     private Button btnConnect;
     private Button btnSendEvent;
@@ -35,22 +31,26 @@ public class MyActivity extends NetworkActivity {
         btnSendEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendEvent(KeyEvent.KEYCODE_A);
+                sendEvent('a');
             }
         });
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            finish();
+        }
+        Log.d(TAG, "keycode: " + keyCode + ", unicode: " + event.getUnicodeChar() + ", asciicode: " + toAscii(event));
+        sendEvent(toAscii(event));
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_quit) {
-            disconnect();
+    public static int toAscii(KeyEvent keyEvent) {
+        int keyCode = keyEvent.getKeyCode();
+        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
+            return keyCode - KeyEvent.KEYCODE_A + 'A';
         }
-        return true;
+        return keyEvent.getUnicodeChar();
     }
 }

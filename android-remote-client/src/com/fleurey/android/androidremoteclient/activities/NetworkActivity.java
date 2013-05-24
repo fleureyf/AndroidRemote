@@ -1,4 +1,4 @@
-package com.fleurey.android.androidremoteclient;
+package com.fleurey.android.androidremoteclient.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,25 +7,36 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
-import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import com.fleurey.android.androidremoteclient.R;
+import com.fleurey.android.androidremoteclient.service.NetworkHandler;
+import com.fleurey.android.androidremoteclient.service.NetworkService;
+import com.fleurey.android.androidremoteclient.service.NetworkServiceConnection;
 
 /**
  * @author Fabien Fleurey
  * @version 1.0 5/23/13
  */
-public class NetworkActivity extends Activity implements NetworkServiceConnection.NetworkServiceConnectionCallback {
+public class NetworkActivity extends Activity implements NetworkServiceConnection.NetworkServiceListener {
 
     private static final String TAG = NetworkActivity.class.getSimpleName();
-    private static final String ADDRESS = "192.168.0.20";
-    private static final int PORT = 5555;
+    private static final String ADDRESS = "192.168.0.10";
+    private static final int PORT = 5566;
 
-    private NetworkServiceConnection networkServiceConnection = new NetworkServiceConnection();
+    private NetworkServiceConnection networkServiceConnection;
     private Messenger networkMessenger;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        networkServiceConnection = new NetworkServiceConnection(this);
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        bindService(new Intent(getApplicationContext(), ConnectionService.class), networkServiceConnection, BIND_AUTO_CREATE);
+        bindService(new Intent(getApplicationContext(), NetworkService.class), networkServiceConnection, BIND_AUTO_CREATE);
     }
 
     @Override
@@ -35,6 +46,20 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
             unbindService(networkServiceConnection);
             networkServiceConnection.setBound(false);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_quit) {
+            disconnect();
+        }
+        return true;
     }
 
     @Override
@@ -48,12 +73,12 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
             return false;
         }
         try {
-            Message message = Message.obtain(null, NetworkHandler.MSG_DISCONNECT);
+            Message message = Message.obtain(null, NetworkHandler.MSG_CONNECT);
             Bundle data = new Bundle();
             data.putString(NetworkHandler.EXTRA_ADDRESS, ADDRESS);
             data.putInt(NetworkHandler.EXTRA_PORT, PORT);
             message.setData(data);
-            networkServiceConnection.getNetworkMessager().send(message);
+            networkMessenger.send(message);
             return true;
         } catch (RemoteException e) {
             Log.e(TAG, "connect error", e);
@@ -67,7 +92,7 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
             return false;
         }
         try {
-            networkServiceConnection.getNetworkMessager().send(Message.obtain(null, NetworkHandler.MSG_EVENT, keyCode, 0));
+            networkMessenger.send(Message.obtain(null, NetworkHandler.MSG_EVENT, keyCode, 0));
             return true;
         } catch (RemoteException e) {
             Log.e(TAG, "send event error", e);
@@ -81,7 +106,7 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
             return false;
         }
         try {
-            networkServiceConnection.getNetworkMessager().send(Message.obtain(null, NetworkHandler.MSG_DISCONNECT));
+           networkMessenger.send(Message.obtain(null, NetworkHandler.MSG_DISCONNECT));
             return true;
         } catch (RemoteException e) {
             Log.e(TAG, "disconnect error", e);

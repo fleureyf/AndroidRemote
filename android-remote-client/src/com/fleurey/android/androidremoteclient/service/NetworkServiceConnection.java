@@ -1,4 +1,4 @@
-package com.fleurey.android.androidremoteclient;
+package com.fleurey.android.androidremoteclient.service;
 
 import android.content.ComponentName;
 import android.content.ServiceConnection;
@@ -11,15 +11,15 @@ import android.os.Messenger;
  */
 public class NetworkServiceConnection implements ServiceConnection {
 
-    public interface NetworkServiceConnectionCallback {
+    public interface NetworkServiceListener {
         public void onServiceBound(Messenger networkMessenger);
     }
 
-    private Messenger networkMessager;
+    private NetworkServiceListener listener;
     private boolean bound = false;
 
-    public Messenger getNetworkMessager() {
-        return networkMessager;
+    public NetworkServiceConnection(NetworkServiceListener listener) {
+        this.listener = listener;
     }
 
     public boolean isBound() {
@@ -32,8 +32,8 @@ public class NetworkServiceConnection implements ServiceConnection {
 
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-        networkMessager = new Messenger(iBinder);
         bound = true;
+        listener.onServiceBound(new Messenger(iBinder));
     }
 
     @Override

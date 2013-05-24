@@ -1,4 +1,4 @@
-package com.fleurey.android.androidremoteclient;
+package com.fleurey.android.androidremoteclient.network;
 
 import com.fleurey.android.androidremotecontract.EventEnum;
 
