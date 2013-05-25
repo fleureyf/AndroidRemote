@@ -33,9 +33,13 @@ public class NetworkHandler extends Handler {
     public void handleMessage(Message msg) {
         switch (msg.what) {
             case MSG_CONNECT:
-                String address = msg.getData().getString(EXTRA_ADDRESS);
-                int port = msg.getData().getInt(EXTRA_PORT);
-                networkManager.connect(buildInetAdress(address), port);
+                if (msg.getData() != null) {
+                    String address = msg.getData().getString(EXTRA_ADDRESS);
+                    int port = msg.getData().getInt(EXTRA_PORT);
+                    networkManager.connect(buildInetAdress(address), port);
+                } else {
+                    Log.e(TAG, "Can't connect, bundle data is null");
+                }
                 break;
             case MSG_DISCONNECT:
                 networkManager.disconnect();

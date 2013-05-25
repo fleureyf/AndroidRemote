@@ -36,16 +36,15 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
     @Override
     protected void onStart() {
         super.onStart();
-        bindService(new Intent(getApplicationContext(), NetworkService.class), networkServiceConnection, BIND_AUTO_CREATE);
+        startService(new Intent(getApplicationContext(), NetworkService.class));
+        bindService(new Intent(getApplicationContext(), NetworkService.class), networkServiceConnection, BIND_ABOVE_CLIENT);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (networkServiceConnection.isBound()) {
-            unbindService(networkServiceConnection);
-            networkServiceConnection.setBound(false);
-        }
+        unbindService(networkServiceConnection);
+        networkServiceConnection.setBound(false);
     }
 
     @Override
@@ -58,6 +57,7 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_quit) {
             disconnect();
+            finish();
         }
         return true;
     }
@@ -106,7 +106,8 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
             return false;
         }
         try {
-           networkMessenger.send(Message.obtain(null, NetworkHandler.MSG_DISCONNECT));
+            networkMessenger.send(Message.obtain(null, NetworkHandler.MSG_DISCONNECT));
+            stopService(new Intent(getApplicationContext(), NetworkService.class));
             return true;
         } catch (RemoteException e) {
             Log.e(TAG, "disconnect error", e);
