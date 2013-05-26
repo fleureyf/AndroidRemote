@@ -3,6 +3,7 @@ package com.fleurey.android.androidremoteclient.service;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.RemoteException;
 import android.util.Log;
 import com.fleurey.android.androidremoteclient.network.NetworkManager;
 
@@ -16,11 +17,14 @@ public class NetworkHandler extends Handler {
     public static final String EXTRA_ADDRESS = NetworkHandler.class.getName() + ".EXTRA_ADDRESS";
     public static final String EXTRA_PORT = NetworkHandler.class.getName() + ".EXTRA_PORT";
 
-    private static final String TAG = NetworkHandler.class.getSimpleName();
-
     public static final int MSG_CONNECT = 0;
     public static final int MSG_DISCONNECT = 1;
     public static final int MSG_EVENT = 2;
+
+    public static final int RESPONSE_SUCCESS = 0;
+    public static final int RESPONSE_FAILURE = 1;
+
+    private static final String TAG = NetworkHandler.class.getSimpleName();
 
     private NetworkManager networkManager;
 
@@ -31,23 +35,36 @@ public class NetworkHandler extends Handler {
 
     @Override
     public void handleMessage(Message msg) {
+        Message response = Message.obtain();
+        response.what = msg.what;
+        boolean success = false;
         switch (msg.what) {
             case MSG_CONNECT:
                 if (msg.getData() != null) {
                     String address = msg.getData().getString(EXTRA_ADDRESS);
                     int port = msg.getData().getInt(EXTRA_PORT);
-                    networkManager.connect(buildInetAdress(address), port);
+                    success = networkManager.connect(buildInetAdress(address), port);
                 } else {
                     Log.e(TAG, "Can't connect, bundle data is null");
                 }
                 break;
             case MSG_DISCONNECT:
-                networkManager.disconnect();
+                success = networkManager.disconnect();
                 getLooper().quit();
                 break;
             case MSG_EVENT:
-                networkManager.sendEvent(msg.arg1);
+                success = networkManager.sendEvent(msg.arg1);
                 break;
+        }
+        if (success) {
+            response.arg1 = RESPONSE_SUCCESS;
+        } else {
+            response.arg1 = RESPONSE_FAILURE;
+        }
+        try {
+            msg.replyTo.send(response);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Can't send response", e);
         }
     }
 

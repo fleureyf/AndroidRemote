@@ -2,10 +2,7 @@ package com.fleurey.android.androidremoteclient.activities;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
+import android.os.*;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,11 +23,18 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
 
     private NetworkServiceConnection networkServiceConnection;
     private Messenger networkMessenger;
+    private Messenger callbackMessenger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         networkServiceConnection = new NetworkServiceConnection(this);
+        callbackMessenger = new Messenger(new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                Log.d(TAG, "Callback message received");
+            }
+        });
     }
 
     @Override
@@ -78,6 +82,7 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
             data.putString(NetworkHandler.EXTRA_ADDRESS, ADDRESS);
             data.putInt(NetworkHandler.EXTRA_PORT, PORT);
             message.setData(data);
+            message.replyTo = callbackMessenger;
             networkMessenger.send(message);
             return true;
         } catch (RemoteException e) {
@@ -92,7 +97,9 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
             return false;
         }
         try {
-            networkMessenger.send(Message.obtain(null, NetworkHandler.MSG_EVENT, keyCode, 0));
+            Message message = Message.obtain(null, NetworkHandler.MSG_EVENT, keyCode, 0);
+            message.replyTo = callbackMessenger;
+            networkMessenger.send(message);
             return true;
         } catch (RemoteException e) {
             Log.e(TAG, "send event error", e);
@@ -106,7 +113,9 @@ public class NetworkActivity extends Activity implements NetworkServiceConnectio
             return false;
         }
         try {
-            networkMessenger.send(Message.obtain(null, NetworkHandler.MSG_DISCONNECT));
+            Message message = Message.obtain(null, NetworkHandler.MSG_DISCONNECT);
+            message.replyTo = callbackMessenger;
+            networkMessenger.send(message);
             stopService(new Intent(getApplicationContext(), NetworkService.class));
             return true;
         } catch (RemoteException e) {
